@@ -1,15 +1,47 @@
 # Travel Explorer
 
-Discover, explore and track your adventures — a Flutter app that combines a
-destination guide, a personal travel journal and a trip planner. Works fully
-offline; no account, API key or backend is required.
+**Discover, explore and track your adventures.** A Flutter app that combines a
+destination guide, a personal travel journal and a trip planner — fully
+offline, with no account, API key or backend required.
+
+![Flutter](https://img.shields.io/badge/Flutter-3.47-02569B?logo=flutter&logoColor=white)
+![Dart](https://img.shields.io/badge/Dart-3.13-0175C2?logo=dart&logoColor=white)
+![Platforms](https://img.shields.io/badge/platforms-Android%20%7C%20iOS-3DDC84)
+![State](https://img.shields.io/badge/state-Riverpod-00B4AB)
+![Storage](https://img.shields.io/badge/storage-Hive%20(offline)-F5A623)
+
+<p align="center">
+  <img src="docs/screenshots/home.png" width="19%" alt="Home dashboard" />
+  <img src="docs/screenshots/explore.png" width="19%" alt="Explore: search, filters and favourites" />
+  <img src="docs/screenshots/best_time.png" width="19%" alt="Destination page with best time to visit" />
+  <img src="docs/screenshots/my_travels.png" width="19%" alt="My Travels timeline" />
+  <img src="docs/screenshots/profile.png" width="19%" alt="Profile" />
+</p>
+<p align="center"><sub>Home · Explore · Best time to visit · My Travels · Profile</sub></p>
+
+## Highlights
+
+- **Personal home dashboard** — explorer level and progress, your next trip with a
+  countdown, recent memories and a bucket-list preview.
+- **Explore** — search every place in a country, narrow by type (attractions,
+  hidden gems, food spots, saved), filter, sort and bookmark favourites.
+- **Destination guides** — intro and history (from Wikipedia), a 12-month
+  best-time strip (best, rainy, peak crowds), season cards, attractions, food.
+- **My Travels** — places, destinations and countries visited; a photo wall,
+  history by state and city, a timeline with ratings, and a memory journal.
+- **Your own map** — only the places you've been (shown with your memory photos)
+  and your bucket list; tap a place to see its photos and every memory.
+- **Trip planner** — day-by-day plans with attractions, food and custom items.
+- **Achievements & analytics** — 14 computed badges and charts by state,
+  category and month.
+- **Private by design** — everything is stored on the device.
 
 ## Running
 
 ```bash
 flutter pub get
 flutter run            # Android or iOS device / emulator
-flutter test           # unit + widget tests
+flutter test           # unit + widget tests (incl. a layout audit at 5 screen sizes)
 flutter build apk      # release Android build
 ```
 
@@ -20,22 +52,23 @@ Flutter 3.47 / Dart 3.13. Targets Android and iOS.
 | Area | Status |
 |---|---|
 | Country selection (India default, searchable, flags, saved) | ✅ |
-| Home dashboard: greeting, search, popular / trending / hidden gems / continue exploring / food, travel progress | ✅ |
+| Home: greeting, search, explorer level & stats, quick actions, next trip, recent memories, bucket-list preview, browse by state | ✅ |
+| Explore: live search, type chips (attractions / hidden gems / food spots / saved), filters, sort, bookmarks, guide shortcuts | ✅ |
 | Country → State → Destination → Place hierarchy, any country | ✅ |
 | Destination page: intro, best time, month strip, season cards, climate, attractions with filters & sort, gems, food, dishes, activities, map | ✅ |
 | Attraction page: details, mark visited (date + rating, edit/remove), bucket list, map, directions, photos, notes, memories | ✅ |
 | Search across states, destinations, places, dishes | ✅ |
 | Filters: popular, hidden gems, nature, adventure, historical, religious, family friendly, free/paid, visited/not visited; sort by popularity, name, distance from centre | ✅ |
-| My Travels: statistics, history (country → state → city), timeline with photos, journal | ✅ |
+| My Travels: collapsing stats header, photo wall, statistics, history (country → state → city), timeline with photos & ratings, journal | ✅ |
 | Memories: multiple photos (gallery/camera), title, date, notes, rating, edit, delete, full-screen viewer | ✅ |
 | Hidden gems section + Add New Place (map pin, categories, photos, tips…) — edit & delete | ✅ |
 | Food Explorer: categories, regions, food spots, must-try dishes, "Foods I want to try" with tried ticks | ✅ |
 | Best Time to Visit: pick a month, see which destinations suit it | ✅ |
-| Interactive map (OpenStreetMap): colour-coded markers, layer toggles, bottom sheet, external navigation | ✅ |
+| Map (OpenStreetMap): places you've visited (with memory-photo markers) and your bucket list; photo strip and all memories per place; directions | ✅ |
 | Bucket list: places & destinations, filter by country/state, tick off as visited (updates stats), saved food spots | ✅ |
 | Trip planner: create/edit, days, add attractions/food/custom items, reorder, move between days, complete items | ✅ |
 | Analytics: totals, places by state, by category, monthly activity; 14 computed achievements | ✅ |
-| Profile & settings: name, photo, bio, theme (system/light/dark), notification prefs, privacy, clear data, about | ✅ |
+| Profile & settings: cover and avatar, level badge, stats, name, photo, bio, theme (system/light/dark), notification prefs, privacy, clear data, about | ✅ |
 | Local persistence of everything (survives restarts) | ✅ |
 
 ## Architecture
@@ -66,7 +99,9 @@ lib/
   providers; business rules (visit/memory relationships, stats, filtering) live in
   `application/` and `features/explore/place_filters.dart`, not in widgets.
 - **Navigation**: GoRouter with a `StatefulShellRoute` for the five tabs
-  (Explore, Map, My Travels, Bucket List, Profile); detail pages push over the shell.
+  (Home, Explore, Map, My Travels, Profile); the bucket list and detail pages push
+  over the shell. Tabs can be deep-linked, e.g. `/travels?tab=journal`,
+  `/bucket?tab=trips`.
 - **Storage**: Hive boxes holding JSON strings — the same shape a REST API would
   return, so no adapters or build_runner.
 
@@ -160,6 +195,18 @@ logos). Configuration is in `pubspec.yaml`. After changing the artwork, run:
 dart run flutter_launcher_icons        # Android (adaptive + legacy) and iOS icons
 dart run flutter_native_splash:create  # launch screens, incl. Android 12+ and dark mode
 ```
+
+## Screenshots
+
+The images in `docs/screenshots/` are rendered headlessly from the real app with
+sample data (a fresh database; generated artwork instead of network photos):
+
+```bash
+flutter test tool/screenshots_test.dart --update-goldens --dart-define=FLUTTER_ROOT=<path to your Flutter SDK>
+```
+
+The headless renderer can't draw flag emoji, so the country flag shows as a
+placeholder glyph in these images; it renders normally on devices.
 
 ## Fonts & licences
 
