@@ -950,7 +950,7 @@ class _DishWishChip extends ConsumerWidget {
       selected: added,
       onTap: () async {
         if (added) {
-          context.go(Routes.bucket);
+          context.push(Routes.bucketTab('food'));
           return;
         }
         final n = ref.read(dishWishesProvider.notifier);

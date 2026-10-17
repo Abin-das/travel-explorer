@@ -15,12 +15,18 @@ import '../../domain/entities/user_activity.dart';
 import '../trips/trip_widgets.dart';
 
 class BucketScreen extends ConsumerWidget {
-  const BucketScreen({super.key});
+  const BucketScreen({super.key, this.initialTab});
+
+  /// One of [tabs]; opens on Saved Places when null or unknown.
+  final String? initialTab;
+
+  static const tabs = ['saved', 'food', 'trips'];
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return DefaultTabController(
       length: 3,
+      initialIndex: tabs.indexOf(initialTab ?? '').clamp(0, tabs.length - 1),
       child: Scaffold(
         appBar: AppBar(
           title: Text('My Bucket List', style: context.text.headlineMedium),

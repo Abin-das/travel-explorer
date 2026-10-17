@@ -7,6 +7,7 @@ import '../../domain/entities/place.dart';
 import '../../features/bucket/bucket_screen.dart';
 import '../../features/explore/category_screen.dart';
 import '../../features/explore/destination_screen.dart';
+import '../../features/explore/explore_screen.dart';
 import '../../features/explore/hidden_gems_screen.dart';
 import '../../features/explore/home_screen.dart';
 import '../../features/explore/place_detail_screen.dart';
@@ -58,7 +59,7 @@ GoRoute _route(String path, Widget Function(GoRouterState s) build) =>
 final routerProvider = Provider<GoRouter>((ref) {
   return GoRouter(
     navigatorKey: _rootKey,
-    initialLocation: Routes.explore,
+    initialLocation: Routes.home,
     redirect: (context, state) {
       final hasCountry = ref.read(settingsProvider).countryId != null;
       if (!hasCountry && state.matchedLocation != Routes.welcome) return Routes.welcome;
@@ -71,22 +72,32 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state, shell) => AppShell(shell: shell),
         branches: [
           StatefulShellBranch(
-            routes: [GoRoute(path: Routes.explore, builder: (_, _) => const HomeScreen())],
+            routes: [GoRoute(path: Routes.home, builder: (_, _) => const HomeScreen())],
+          ),
+          StatefulShellBranch(
+            routes: [GoRoute(path: Routes.explore, builder: (_, _) => const ExploreScreen())],
           ),
           StatefulShellBranch(
             routes: [GoRoute(path: Routes.map, builder: (_, _) => const MapScreen())],
           ),
           StatefulShellBranch(
-            routes: [GoRoute(path: Routes.travels, builder: (_, _) => const MyTravelsScreen())],
-          ),
-          StatefulShellBranch(
-            routes: [GoRoute(path: Routes.bucket, builder: (_, _) => const BucketScreen())],
+            routes: [
+              GoRoute(
+                path: Routes.travels,
+                builder: (_, s) {
+                  final tab = s.uri.queryParameters['tab'];
+                  // Keyed by tab so a deep link re-opens on the requested tab.
+                  return MyTravelsScreen(key: ValueKey(tab), initialTab: tab);
+                },
+              ),
+            ],
           ),
           StatefulShellBranch(
             routes: [GoRoute(path: Routes.profile, builder: (_, _) => const ProfileScreen())],
           ),
         ],
       ),
+      _route(Routes.bucket, (s) => BucketScreen(initialTab: s.uri.queryParameters['tab'])),
       _route(Routes.search, (_) => const SearchScreen()),
       _route('/region/:id', (s) => RegionScreen(regionId: s.pathParameters['id']!)),
       _route('/destination/:id', (s) => DestinationScreen(destinationId: s.pathParameters['id']!)),

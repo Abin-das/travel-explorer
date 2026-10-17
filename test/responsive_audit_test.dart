@@ -35,6 +35,7 @@ const _devices = [
 
 /// (route, tabs to visit on that route)
 const _routes = <(String, List<String>)>[
+  ('/home', []),
   ('/explore', []),
   ('/search', []),
   ('/countries', []),

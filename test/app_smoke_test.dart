@@ -47,8 +47,8 @@ void main() {
     await settle(tester);
 
     expect(find.textContaining('Explorer!'), findsOneWidget);
-    expect(find.text('Popular Destinations'), findsOneWidget);
-    expect(find.text('Munnar'), findsWidgets);
+    expect(find.text('Your Next Trip'), findsOneWidget);
+    expect(find.text('Start your journey'), findsOneWidget);
 
     // Search for Munnar and open it.
     await tester.tap(find.byType(AppSearchField));

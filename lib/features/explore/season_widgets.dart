@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/utils/labels.dart';
@@ -17,47 +18,109 @@ class MonthStrip extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          children: [
-            for (var m = 1; m <= 12; m++)
-              Expanded(
-                child: Column(
-                  children: [
-                    Container(
-                      height: 30,
-                      margin: const EdgeInsets.symmetric(horizontal: 1.5),
-                      decoration: BoxDecoration(
-                        color: guide.bestMonths.contains(m)
-                            ? SeasonFit.best.color
-                            : guide.rainyMonths.contains(m)
-                            ? SeasonFit.good.color.withValues(alpha: 0.55)
-                            : context.palette.chip,
-                        borderRadius: BorderRadius.circular(6),
-                        border: m == now ? Border.all(color: context.colors.onSurface, width: 2) : null,
-                      ),
-                      child: guide.peakMonths.contains(m)
-                          ? const Icon(Icons.groups_rounded, size: 14, color: Colors.white)
-                          : null,
-                    ),
-                    const SizedBox(height: 4),
-                    Text(monthShort(m).substring(0, 1), style: context.text.labelSmall),
-                  ],
+        // Two rows of six so each month gets a readable three-letter label.
+        for (final half in const [1, 7]) ...[
+          if (half == 7) const SizedBox(height: AppSpace.sm),
+          Row(
+            children: [
+              for (var m = half; m < half + 6; m++) ...[
+                if (m != half) const SizedBox(width: AppSpace.xs + 2),
+                Expanded(
+                  child: _MonthCell(
+                    month: m,
+                    best: guide.bestMonths.contains(m),
+                    rainy: guide.rainyMonths.contains(m),
+                    peak: guide.peakMonths.contains(m),
+                    current: m == now,
+                  ),
                 ),
-              ),
-          ],
-        ),
-        const SizedBox(height: AppSpace.sm),
+              ],
+            ],
+          ),
+        ],
+        const SizedBox(height: AppSpace.md),
         Wrap(
-          spacing: 12,
-          runSpacing: 4,
+          spacing: 14,
+          runSpacing: 6,
           children: [
             _Key(color: SeasonFit.best.color, label: 'Best months'),
-            _Key(color: SeasonFit.good.color.withValues(alpha: 0.55), label: 'Rainy'),
+            const _Key(color: AppColors.oceanBlue, icon: Icons.water_drop_rounded, label: 'Rainy'),
             const _Key(icon: Icons.groups_rounded, label: 'Peak crowds'),
             const _Key(border: true, label: 'This month'),
           ],
         ),
       ],
+    );
+  }
+}
+
+class _MonthCell extends StatelessWidget {
+  const _MonthCell({
+    required this.month,
+    required this.best,
+    required this.rainy,
+    required this.peak,
+    required this.current,
+  });
+
+  final int month;
+  final bool best;
+  final bool rainy;
+  final bool peak;
+  final bool current;
+
+  @override
+  Widget build(BuildContext context) {
+    final bg = best
+        ? SeasonFit.best.color
+        : rainy
+        ? AppColors.oceanBlue.withValues(alpha: 0.14)
+        : context.palette.chip;
+    final fg = best
+        ? Colors.white
+        : rainy
+        ? AppColors.oceanBlue
+        : context.palette.muted;
+    final status = [if (best) 'best time', if (rainy) 'rainy', if (peak) 'peak crowds', if (current) 'this month'];
+
+    return Semantics(
+      label: '${monthShort(month)}${status.isEmpty ? '' : ': ${status.join(', ')}'}',
+      excludeSemantics: true,
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: AppSpace.sm, horizontal: 2),
+        decoration: BoxDecoration(
+          color: bg,
+          borderRadius: AppRadius.smAll,
+          border: Border.all(color: current ? context.colors.onSurface : Colors.transparent, width: 2),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                monthShort(month),
+                maxLines: 1,
+                style: context.text.labelMedium?.copyWith(
+                  color: best ? Colors.white : context.colors.onSurface,
+                  fontWeight: best || current ? FontWeight.w700 : FontWeight.w500,
+                ),
+              ),
+            ),
+            const SizedBox(height: 2),
+            SizedBox(
+              height: 14,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  if (rainy) Icon(Icons.water_drop_rounded, size: 12, color: fg),
+                  if (peak) Icon(Icons.groups_rounded, size: 14, color: fg),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -75,7 +138,7 @@ class _Key extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         if (icon != null)
-          Icon(icon, size: 14, color: context.palette.muted)
+          Icon(icon, size: 14, color: color ?? context.palette.muted)
         else
           Container(
             width: 12,

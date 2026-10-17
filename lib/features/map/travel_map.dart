@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:latlong2/latlong.dart';
+import 'package:latlong2/latlong.dart' show LatLng;
 
 import '../../application/providers.dart';
 import '../../core/theme/app_colors.dart';
+import '../../core/widgets/media.dart';
 import '../../domain/entities/common.dart';
 
 LatLng toLatLng(GeoPoint p) => LatLng(p.lat, p.lng);
@@ -25,11 +26,14 @@ enum MarkerStyle {
 }
 
 class MapPin {
-  const MapPin({required this.id, required this.point, required this.style, this.label});
+  const MapPin({required this.id, required this.point, required this.style, this.label, this.photoPath});
   final String id;
   final GeoPoint point;
   final MarkerStyle style;
   final String? label;
+
+  /// A user photo shown as the marker in place of the pin icon.
+  final String? photoPath;
 }
 
 /// Map wrapper. Tiles come from [mapTileConfigProvider] (OpenStreetMap by
@@ -105,16 +109,28 @@ class TravelMap extends ConsumerWidget {
           MarkerLayer(
             markers: [
               for (final p in pins)
-                Marker(
-                  point: toLatLng(p.point),
-                  width: p.id == selectedId ? 52 : 40,
-                  height: p.id == selectedId ? 52 : 40,
-                  alignment: Alignment.topCenter,
-                  child: GestureDetector(
-                    onTap: onPinTap == null ? null : () => onPinTap!(p),
-                    child: _PinIcon(style: p.style, selected: p.id == selectedId, label: p.label),
+                if (p.photoPath != null)
+                  Marker(
+                    point: toLatLng(p.point),
+                    width: _PhotoPin.sizeFor(p.id == selectedId),
+                    height: _PhotoPin.sizeFor(p.id == selectedId) + _PhotoPin.tail,
+                    alignment: Alignment.topCenter,
+                    child: GestureDetector(
+                      onTap: onPinTap == null ? null : () => onPinTap!(p),
+                      child: _PhotoPin(pin: p, selected: p.id == selectedId),
+                    ),
+                  )
+                else
+                  Marker(
+                    point: toLatLng(p.point),
+                    width: p.id == selectedId ? 52 : 40,
+                    height: p.id == selectedId ? 52 : 40,
+                    alignment: Alignment.topCenter,
+                    child: GestureDetector(
+                      onTap: onPinTap == null ? null : () => onPinTap!(p),
+                      child: _PinIcon(style: p.style, selected: p.id == selectedId, label: p.label),
+                    ),
                   ),
-                ),
             ],
           ),
           if (tiles.attribution.isNotEmpty)
@@ -156,6 +172,64 @@ class _PinIcon extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Marker showing a user photo in a framed thumbnail with a pointer below.
+class _PhotoPin extends StatelessWidget {
+  const _PhotoPin({required this.pin, required this.selected});
+  final MapPin pin;
+  final bool selected;
+
+  static const double tail = 12;
+  static double sizeFor(bool selected) => selected ? 64 : 50;
+
+  @override
+  Widget build(BuildContext context) {
+    final size = sizeFor(selected);
+    final color = pin.style.color;
+    return Semantics(
+      label: pin.label == null ? pin.style.label : '${pin.label}, ${pin.style.label}',
+      button: true,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: size,
+            height: size,
+            padding: const EdgeInsets.all(3),
+            decoration: BoxDecoration(
+              color: color,
+              borderRadius: BorderRadius.circular(14),
+              boxShadow: const [BoxShadow(color: Colors.black38, blurRadius: 6, offset: Offset(0, 2))],
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(11),
+              child: LocalPhoto(path: pin.photoPath!, cacheWidth: 200),
+            ),
+          ),
+          CustomPaint(size: const Size(16, tail), painter: _TailPainter(color)),
+        ],
+      ),
+    );
+  }
+}
+
+class _TailPainter extends CustomPainter {
+  const _TailPainter(this.color);
+  final Color color;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final path = Path()
+      ..moveTo(0, 0)
+      ..lineTo(size.width, 0)
+      ..lineTo(size.width / 2, size.height)
+      ..close();
+    canvas.drawPath(path, Paint()..color = color);
+  }
+
+  @override
+  bool shouldRepaint(_TailPainter old) => old.color != color;
 }
 
 class MapLegend extends StatelessWidget {

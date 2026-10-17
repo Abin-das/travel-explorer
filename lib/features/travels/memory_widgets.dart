@@ -13,8 +13,11 @@ import '../../domain/entities/user_activity.dart';
 
 /// Journal card: cover photo (or place art), name, date, note, photo count.
 class MemoryCard extends ConsumerWidget {
-  const MemoryCard({super.key, required this.memory});
+  const MemoryCard({super.key, required this.memory, this.onTap});
   final TravelMemory memory;
+
+  /// Overrides the default of opening the memory's detail page.
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -22,7 +25,7 @@ class MemoryCard extends ConsumerWidget {
     final place = cat?.place(memory.placeId);
     return SurfaceCard(
       padding: EdgeInsets.zero,
-      onTap: () => context.push(Routes.memory(memory.id)),
+      onTap: onTap ?? () => context.push(Routes.memory(memory.id)),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

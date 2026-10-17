@@ -2,11 +2,18 @@
 abstract final class Routes {
   static const welcome = '/welcome';
   static const countries = '/countries';
+  static const home = '/home';
   static const explore = '/explore';
   static const map = '/map';
   static const travels = '/travels';
   static const bucket = '/bucket';
   static const profile = '/profile';
+
+  /// My Travels on a given tab: overview, history, timeline or journal.
+  static String travelsTab(String tab) => '$travels?tab=$tab';
+
+  /// Bucket list on a given tab: saved, food or trips.
+  static String bucketTab(String tab) => '$bucket?tab=$tab';
 
   static const search = '/search';
   static const gems = '/gems';

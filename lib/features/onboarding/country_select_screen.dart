@@ -33,7 +33,7 @@ class _CountrySelectScreenState extends ConsumerState<CountrySelectScreen> {
     await ref.read(settingsProvider.notifier).selectCountry(_selected);
     if (!mounted) return;
     if (widget.onboarding) {
-      context.go(Routes.explore);
+      context.go(Routes.home);
     } else {
       context.pop();
     }
