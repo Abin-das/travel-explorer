@@ -216,26 +216,42 @@ class _Guides extends StatelessWidget {
     ];
     return Padding(
       padding: const EdgeInsets.fromLTRB(AppSpace.gutter, AppSpace.md, AppSpace.gutter, 0),
-      child: Row(
-        children: [
-          for (final (i, (icon, label, color, route)) in items.indexed) ...[
-            if (i > 0) const SizedBox(width: AppSpace.sm),
-            Expanded(
-              child: SurfaceCard(
-                padding: const EdgeInsets.all(AppSpace.md),
-                onTap: () => context.push(route),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Icon(icon, color: color),
-                    const SizedBox(height: AppSpace.xs),
-                    Text(label, maxLines: 2, style: context.text.labelMedium),
-                  ],
+      // IntrinsicHeight + stretch keeps the tiles equal when a label wraps.
+      child: IntrinsicHeight(
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            for (final (i, (icon, label, color, route)) in items.indexed) ...[
+              if (i > 0) const SizedBox(width: AppSpace.sm),
+              Expanded(
+                child: Material(
+                  color: color.withValues(alpha: 0.12),
+                  borderRadius: AppRadius.mdAll,
+                  clipBehavior: Clip.antiAlias,
+                  child: InkWell(
+                    onTap: () => context.push(route),
+                    child: Padding(
+                      padding: const EdgeInsets.all(AppSpace.md),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            width: 36,
+                            height: 36,
+                            decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+                            child: Icon(icon, color: Colors.white, size: 20),
+                          ),
+                          const SizedBox(height: AppSpace.sm),
+                          Text(label, maxLines: 2, style: context.text.labelLarge),
+                        ],
+                      ),
+                    ),
+                  ),
                 ),
               ),
-            ),
+            ],
           ],
-        ],
+        ),
       ),
     );
   }

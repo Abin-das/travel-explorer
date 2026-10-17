@@ -77,14 +77,6 @@ class _Hero extends ConsumerWidget {
       clipBehavior: Clip.antiAlias,
       child: Stack(
         children: [
-          // Decorative ridge line along the bottom edge.
-          const Positioned(
-            left: 0,
-            right: 0,
-            bottom: 0,
-            height: 110,
-            child: Opacity(opacity: 0.1, child: _RidgeDecoration()),
-          ),
           Padding(
             padding: EdgeInsets.fromLTRB(AppSpace.gutter, top + AppSpace.md, AppSpace.md, AppSpace.xl),
             child: Column(
@@ -348,6 +340,8 @@ class _HomeBody extends ConsumerWidget {
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
+      // Above the bottom navigation bar, so the last rows aren't hidden.
+      useRootNavigator: true,
       builder: (ctx) => DraggableScrollableSheet(
         expand: false,
         initialChildSize: 0.6,
@@ -393,37 +387,53 @@ class _QuickActions extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final items = [
-      (Icons.event_note_rounded, 'Plan\na trip', AppColors.oceanBlue, Routes.newTrip),
-      (Icons.add_photo_alternate_rounded, 'Add a\nmemory', AppColors.visited, '/memory/new'),
-      (Icons.map_rounded, 'My\nmap', AppColors.hiddenGem, Routes.map),
-      (Icons.wb_sunny_rounded, 'Best time\nto visit', AppColors.bucket, Routes.seasons),
+      (Icons.event_note_rounded, 'Plan trip', AppColors.oceanBlue, Routes.newTrip),
+      (Icons.add_photo_alternate_rounded, 'Add memory', AppColors.visited, '/memory/new'),
+      (Icons.map_rounded, 'My map', AppColors.hiddenGem, Routes.map),
+      (Icons.wb_sunny_rounded, 'Best time', AppColors.bucket, Routes.seasons),
     ];
     return Padding(
       padding: AppSpace.screen,
-      child: Row(
-        children: [
-          for (final (i, (icon, label, color, route)) in items.indexed) ...[
-            if (i > 0) const SizedBox(width: AppSpace.sm),
-            Expanded(
-              child: SurfaceCard(
-                padding: const EdgeInsets.symmetric(vertical: AppSpace.md, horizontal: AppSpace.xs),
-                onTap: () => route == Routes.map ? context.go(route) : context.push(route),
-                child: Column(
-                  children: [
-                    Container(
-                      width: 44,
-                      height: 44,
-                      decoration: BoxDecoration(color: color.withValues(alpha: 0.14), shape: BoxShape.circle),
-                      child: Icon(icon, color: color, size: 22),
+      // IntrinsicHeight + stretch keeps the tiles equal when a label wraps.
+      child: IntrinsicHeight(
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            for (final (i, (icon, label, color, route)) in items.indexed) ...[
+              if (i > 0) const SizedBox(width: AppSpace.sm),
+              Expanded(
+                child: Material(
+                  color: color.withValues(alpha: 0.12),
+                  borderRadius: AppRadius.mdAll,
+                  clipBehavior: Clip.antiAlias,
+                  child: InkWell(
+                    onTap: () => route == Routes.map ? context.go(route) : context.push(route),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: AppSpace.md, horizontal: AppSpace.xs),
+                      child: Column(
+                        children: [
+                          Container(
+                            width: 40,
+                            height: 40,
+                            decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+                            child: Icon(icon, color: Colors.white, size: 20),
+                          ),
+                          const SizedBox(height: AppSpace.sm),
+                          Text(
+                            label,
+                            textAlign: TextAlign.center,
+                            maxLines: 2,
+                            style: context.text.labelMedium?.copyWith(fontWeight: FontWeight.w600),
+                          ),
+                        ],
+                      ),
                     ),
-                    const SizedBox(height: 6),
-                    Text(label, textAlign: TextAlign.center, style: context.text.labelSmall),
-                  ],
+                  ),
                 ),
               ),
-            ),
+            ],
           ],
-        ],
+        ),
       ),
     );
   }
@@ -672,38 +682,6 @@ class _GlassStat extends StatelessWidget {
       ),
     );
   }
-}
-
-class _RidgeDecoration extends StatelessWidget {
-  const _RidgeDecoration();
-
-  @override
-  Widget build(BuildContext context) => CustomPaint(painter: _RidgePainter());
-}
-
-class _RidgePainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final w = size.width, h = size.height;
-    final p = Paint()..color = Colors.white;
-    canvas.drawPath(
-      Path()
-        ..moveTo(0, h)
-        ..lineTo(0, h * 0.7)
-        ..lineTo(w * 0.18, h * 0.25)
-        ..lineTo(w * 0.32, h * 0.6)
-        ..lineTo(w * 0.5, h * 0.05)
-        ..lineTo(w * 0.68, h * 0.55)
-        ..lineTo(w * 0.82, h * 0.3)
-        ..lineTo(w, h * 0.65)
-        ..lineTo(w, h)
-        ..close(),
-      p,
-    );
-  }
-
-  @override
-  bool shouldRepaint(_RidgePainter oldDelegate) => false;
 }
 
 class _HomeSkeleton extends StatelessWidget {

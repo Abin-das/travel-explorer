@@ -19,8 +19,11 @@ class SectionHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: padding ?? const EdgeInsets.fromLTRB(AppSpace.gutter, AppSpace.xl, AppSpace.sm, AppSpace.md),
+      // Baseline alignment lines the action's text up with the title's text,
+      // whatever the button's padding or the subtitle below the title.
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.end,
+        crossAxisAlignment: CrossAxisAlignment.baseline,
+        textBaseline: TextBaseline.alphabetic,
         children: [
           Expanded(
             child: Column(
@@ -31,8 +34,11 @@ class SectionHeader extends StatelessWidget {
               ],
             ),
           ),
+          // Not Flexible: a Flexible here would take half the row and leave the
+          // button floating mid-way instead of at the trailing edge.
           if (action != null)
-            Flexible(
+            ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 160),
               child: TextButton(
                 onPressed: onAction,
                 child: Text(action!, maxLines: 1, overflow: TextOverflow.ellipsis),

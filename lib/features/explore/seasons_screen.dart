@@ -38,20 +38,8 @@ class _SeasonsScreenState extends ConsumerState<SeasonsScreen> {
           return ListView(
             padding: const EdgeInsets.only(bottom: AppSpace.xxxl),
             children: [
-              SizedBox(
-                height: scaledHeight(context, 64, textShare: 0.7),
-                child: ListView.separated(
-                  scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(horizontal: AppSpace.gutter, vertical: AppSpace.sm),
-                  itemCount: 12,
-                  separatorBuilder: (_, _) => const SizedBox(width: 8),
-                  itemBuilder: (_, i) => AppChip(
-                    label: monthShort(i + 1) + (i + 1 == DateTime.now().month ? ' •' : ''),
-                    selected: _month == i + 1,
-                    onTap: () => setState(() => _month = i + 1),
-                  ),
-                ),
-              ),
+              _MonthPicker(selected: _month, onChanged: (m) => setState(() => _month = m)),
+              const SizedBox(height: AppSpace.lg),
               const Padding(padding: AppSpace.screen, child: CuratedSeasonNote()),
               SectionHeader('Great in ${monthShort(_month)}', subtitle: plural(good.length, 'destination')),
               if (good.isEmpty)
@@ -69,6 +57,85 @@ class _SeasonsScreenState extends ConsumerState<SeasonsScreen> {
             ],
           );
         },
+      ),
+    );
+  }
+}
+
+/// All twelve months as a 2×6 grid; a dot marks the current month.
+class _MonthPicker extends StatelessWidget {
+  const _MonthPicker({required this.selected, required this.onChanged});
+  final int selected;
+  final ValueChanged<int> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final now = DateTime.now().month;
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(AppSpace.gutter, AppSpace.sm, AppSpace.gutter, 0),
+      child: Column(
+        children: [
+          for (final half in const [1, 7]) ...[
+            if (half == 7) const SizedBox(height: AppSpace.sm),
+            Row(
+              children: [
+                for (var m = half; m < half + 6; m++) ...[
+                  if (m != half) const SizedBox(width: AppSpace.sm),
+                  Expanded(child: _monthButton(context, m, now)),
+                ],
+              ],
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _monthButton(BuildContext context, int m, int now) {
+    final isSelected = m == selected;
+    final fg = isSelected ? context.colors.onPrimary : context.colors.onSurface;
+    return Semantics(
+      selected: isSelected,
+      button: true,
+      label: '${monthShort(m)}${m == now ? ', this month' : ''}',
+      excludeSemantics: true,
+      child: Material(
+        color: isSelected ? context.colors.primary : context.palette.card,
+        shape: RoundedRectangleBorder(
+          borderRadius: AppRadius.smAll,
+          side: BorderSide(color: isSelected ? Colors.transparent : context.palette.line),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: () => onChanged(m),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: AppSpace.sm + 2, horizontal: 2),
+            child: Column(
+              children: [
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(
+                    monthShort(m),
+                    maxLines: 1,
+                    style: context.text.labelLarge?.copyWith(
+                      color: fg,
+                      fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Container(
+                  width: 5,
+                  height: 5,
+                  decoration: BoxDecoration(
+                    color: m == now ? (isSelected ? fg : context.colors.primary) : Colors.transparent,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }
